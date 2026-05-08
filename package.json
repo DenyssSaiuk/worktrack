@@ -1,0 +1,31 @@
+{
+  "name": "worktrack",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Self-hosted employee time tracking and productivity analytics.",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@10.17.1",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "dev:backend": "turbo run dev --filter=@worktrack/backend",
+    "dev:dashboard": "turbo run dev --filter=@worktrack/dashboard",
+    "dev:agent": "turbo run dev --filter=@worktrack/agent",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    "db:migrate": "turbo run db:migrate --filter=@worktrack/database",
+    "db:seed": "turbo run db:seed --filter=@worktrack/database",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "turbo": "^2.1.0"
+  }
+}

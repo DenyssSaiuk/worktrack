@@ -1,0 +1,70 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+build/
+out/
+.next/
+.turbo/
+*.tsbuildinfo
+
+# Rust / Tauri
+target/
+**/src-tauri/target/
+**/src-tauri/gen/schemas/
+*.rs.bk
+
+# Environment
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.sample
+*.swp
+*.swo
+Thumbs.db
+
+# Test / coverage
+coverage/
+*.lcov
+playwright-report/
+test-results/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+
+# Prisma
+packages/database/prisma/migrations/.dev.db
+*.db
+*.db-journal
+
+# Browser extension build artefacts
+apps/extension/.crxjs/
+apps/extension/dist-chrome/
+apps/extension/dist-firefox/
+*.crx
+*.xpi
+*.zip
+
+# Docker / runtime data
+docker/postgres/data/
+docker/redis/data/
+docker/minio/data/
+
+# Misc
+.cache/
+.eslintcache
+.parcel-cache/
