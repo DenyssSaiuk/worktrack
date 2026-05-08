@@ -56,7 +56,9 @@ Production deployment uses `docker-compose.prod.yml` behind nginx + Let's Encryp
 
 ## Project status
 
-Phase 0 (foundation scaffold) complete. See `CLAUDE.md` § "Current state" for the up-to-date phase tracker.
+All nine phases complete. See `CLAUDE.md` § "Current state" for the
+phase-by-phase summary, and the `docs/` directory for `architecture.md`,
+`deployment.md`, `privacy-policy.md`, `security.md`, and `api.md`.
 
 ## License
 
