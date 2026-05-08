@@ -106,18 +106,20 @@ model WorkSession {
 }
 
 // TimescaleDB hypertable; the migration runs `SELECT create_hypertable(...)`.
-// Note: Prisma cannot model composite primary keys with the partition column,
-// so id remains a string and we add unique(sessionId, clientEventId) for dedup.
+// Hypertables require every unique index / primary key to include the
+// partition column (timestamp). We keep `id` for ergonomics but make the
+// uniqueness constraint (sessionId, clientEventId, timestamp).
 model ActivityEvent {
-  id            String      @id @default(cuid())
+  id            String      @default(cuid())
   sessionId     String
   session       WorkSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   clientEventId String
-  timestamp     DateTime
+  timestamp     DateTime    @db.Timestamptz(3)
   type          String
   payload       Json
 
-  @@unique([sessionId, clientEventId])
+  @@id([sessionId, timestamp, clientEventId])
+  @@unique([sessionId, clientEventId, timestamp])
   @@index([sessionId, timestamp])
   @@index([timestamp])
   @@index([type])

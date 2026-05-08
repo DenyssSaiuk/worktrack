@@ -13,8 +13,10 @@ import jwtPlugin from './plugins/jwt.js';
 import prismaPlugin from './plugins/prisma.js';
 import rateLimitPlugin from './plugins/rate-limit.js';
 import redisPlugin from './plugins/redis.js';
+import { registerAdminRoutes } from './routes/admin/index.js';
 import { registerAuthRoutes } from './routes/auth/index.js';
 import { registerHealth } from './routes/health.js';
+import { registerIngestRoutes } from './routes/ingest/index.js';
 import { registerUserRoutes } from './routes/users/index.js';
 
 import type { FastifyInstance, FastifyServerOptions } from 'fastify';
@@ -68,6 +70,18 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
       await registerUserRoutes(instance);
     },
     { prefix: '/api/v1/users' },
+  );
+  await app.register(
+    async (instance) => {
+      await registerAdminRoutes(instance);
+    },
+    { prefix: '/api/v1/admin' },
+  );
+  await app.register(
+    async (instance) => {
+      await registerIngestRoutes(instance);
+    },
+    { prefix: '/api/v1' },
   );
 
   return app;

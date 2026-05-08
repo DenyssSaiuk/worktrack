@@ -7,7 +7,9 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsx watch src/server.ts",
+    "dev:workers": "tsx watch src/workers/start.ts",
     "start": "node dist/server.js",
+    "start:workers": "node dist/workers/start.js",
     "lint": "eslint src test --max-warnings 0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",

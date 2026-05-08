@@ -8,8 +8,8 @@ module.exports = {
       rules: { 'import/no-default-export': 'off' },
     },
     {
-      // The process entry point is allowed to terminate the process.
-      files: ['src/server.ts'],
+      // Process entry points are allowed to terminate the process.
+      files: ['src/server.ts', 'src/workers/start.ts'],
       rules: { 'no-process-exit': 'off' },
     },
     {
@@ -18,4 +18,5 @@ module.exports = {
       rules: { 'import/no-default-export': 'off' },
     },
   ],
+  ignorePatterns: ['test/load/**'],
 };

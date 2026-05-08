@@ -77,11 +77,11 @@ CREATE TABLE "ActivityEvent" (
     "id" TEXT NOT NULL,
     "sessionId" TEXT NOT NULL,
     "clientEventId" TEXT NOT NULL,
-    "timestamp" TIMESTAMP(3) NOT NULL,
+    "timestamp" TIMESTAMPTZ(3) NOT NULL,
     "type" TEXT NOT NULL,
     "payload" JSONB NOT NULL,
 
-    CONSTRAINT "ActivityEvent_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "ActivityEvent_pkey" PRIMARY KEY ("sessionId","timestamp","clientEventId")
 );
 
 -- CreateTable
@@ -235,7 +235,7 @@ CREATE INDEX "ActivityEvent_timestamp_idx" ON "ActivityEvent"("timestamp");
 CREATE INDEX "ActivityEvent_type_idx" ON "ActivityEvent"("type");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ActivityEvent_sessionId_clientEventId_key" ON "ActivityEvent"("sessionId", "clientEventId");
+CREATE UNIQUE INDEX "ActivityEvent_sessionId_clientEventId_timestamp_key" ON "ActivityEvent"("sessionId", "clientEventId", "timestamp");
 
 -- CreateIndex
 CREATE INDEX "ProductivityRule_organizationId_idx" ON "ProductivityRule"("organizationId");
