@@ -1,5 +1,5 @@
 // WorkTrack — Prisma schema
-// Activity events live in a TimescaleDB hypertable; see migrations/manual/timescale.sql.
+// Activity events live in a TimescaleDB hypertable; see prisma/sql/timescale/timescale.sql.
 
 generator client {
   provider      = "prisma-client-js"

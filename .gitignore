@@ -68,3 +68,4 @@ docker/minio/data/
 .cache/
 .eslintcache
 .parcel-cache/
+secrets/
