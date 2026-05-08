@@ -1,0 +1,225 @@
+// WorkTrack — Prisma schema
+// Activity events live in a TimescaleDB hypertable; see migrations/manual/timescale.sql.
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id            String             @id @default(cuid())
+  name          String
+  slug          String             @unique
+  retentionDays Int                @default(90)
+  settings      Json               @default("{}")
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  users         User[]
+  rules         ProductivityRule[]
+  enrollTokens  EnrollToken[]
+  auditLogs     AuditLog[]
+
+  @@index([slug])
+}
+
+model User {
+  id              String        @id @default(cuid())
+  organizationId  String
+  organization    Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email           String        @unique
+  passwordHash    String
+  fullName        String
+  role            String // 'employee' | 'manager' | 'admin'
+  managerId       String?
+  manager         User?         @relation("ManagerToReports", fields: [managerId], references: [id])
+  reports         User[]        @relation("ManagerToReports")
+  workSchedule    Json?
+  consentVersion  String?
+  consentAt       DateTime?
+  consentIp       String?
+  status          String        @default("active") // 'active' | 'suspended' | 'deleted'
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  sessions        WorkSession[]
+  devices         Device[]
+  enrollTokens    EnrollToken[]
+  auditLogsActor  AuditLog[]    @relation("AuditActor")
+
+  @@index([organizationId])
+  @@index([managerId])
+  @@index([role])
+}
+
+model EnrollToken {
+  id             String       @id @default(cuid())
+  token          String       @unique
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt      DateTime
+  consumedAt     DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Device {
+  id           String        @id @default(cuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hostname     String
+  os           String
+  agentVersion String
+  lastSeenAt   DateTime?
+  status       String        @default("active") // 'active' | 'revoked'
+  createdAt    DateTime      @default(now())
+  sessions     WorkSession[]
+
+  @@index([userId])
+  @@index([lastSeenAt])
+}
+
+model WorkSession {
+  id              String          @id @default(cuid())
+  userId          String
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId        String
+  device          Device          @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  clientSessionId String          @unique
+  startedAt       DateTime
+  endedAt         DateTime?
+  privateMinutes  Int             @default(0)
+  state           String          @default("active") // 'active' | 'closed' | 'orphaned'
+  events          ActivityEvent[]
+  screenshots     Screenshot[]
+
+  @@index([userId, startedAt])
+  @@index([deviceId])
+  @@index([state])
+}
+
+// TimescaleDB hypertable; the migration runs `SELECT create_hypertable(...)`.
+// Note: Prisma cannot model composite primary keys with the partition column,
+// so id remains a string and we add unique(sessionId, clientEventId) for dedup.
+model ActivityEvent {
+  id            String      @id @default(cuid())
+  sessionId     String
+  session       WorkSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  clientEventId String
+  timestamp     DateTime
+  type          String
+  payload       Json
+
+  @@unique([sessionId, clientEventId])
+  @@index([sessionId, timestamp])
+  @@index([timestamp])
+  @@index([type])
+}
+
+model ProductivityRule {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  pattern        String
+  category       String // 'productive' | 'neutral' | 'distracting' | 'blocked'
+  appliesTo      Json // 'all' or string[] of userIds
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId])
+  @@index([pattern])
+}
+
+model Screenshot {
+  id         String      @id @default(cuid())
+  sessionId  String
+  session    WorkSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  takenAt    DateTime
+  trigger    String
+  storageKey String
+  width      Int?
+  height     Int?
+  encryption Json // { algo, ivBase64, keyId }
+  aiSummary  String?
+  aiCategory String?
+  reviewed   Boolean     @default(false)
+  reviewedBy String?
+  reviewedAt DateTime?
+  createdAt  DateTime    @default(now())
+
+  @@index([sessionId])
+  @@index([takenAt])
+  @@index([reviewed])
+}
+
+model DailySummary {
+  id                 String   @id @default(cuid())
+  userId             String
+  date               DateTime @db.Date
+  workedMinutes      Int      @default(0)
+  idleMinutes        Int      @default(0)
+  privateMinutes     Int      @default(0)
+  productiveMinutes  Int      @default(0)
+  neutralMinutes     Int      @default(0)
+  distractingMinutes Int      @default(0)
+  productivityScore  Float    @default(0)
+  topApps            Json     @default("[]")
+  topSites           Json     @default("[]")
+  computedAt         DateTime @default(now())
+
+  @@unique([userId, date])
+  @@index([date])
+}
+
+model AuditLog {
+  id             String        @id @default(cuid())
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  actorId        String?
+  actor          User?         @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  action         String
+  target         String?
+  metadata       Json?
+  ip             String?
+  userAgent      String?
+  createdAt      DateTime      @default(now())
+
+  @@index([organizationId, createdAt])
+  @@index([actorId, createdAt])
+  @@index([action])
+}
+
+model ConsentRecord {
+  id            String   @id @default(cuid())
+  userId        String
+  policyVersion String
+  acceptedAt    DateTime @default(now())
+  ip            String?
+  userAgent     String?
+
+  @@index([userId])
+}
+
+model ExportJob {
+  id           String    @id @default(cuid())
+  requestedBy  String
+  status       String    @default("pending") // 'pending' | 'running' | 'done' | 'failed'
+  params       Json
+  progress     Int       @default(0)
+  error        String?
+  storageKey   String?
+  downloadUrl  String?
+  expiresAt    DateTime?
+  createdAt    DateTime  @default(now())
+  completedAt  DateTime?
+
+  @@index([requestedBy, createdAt])
+  @@index([status])
+}

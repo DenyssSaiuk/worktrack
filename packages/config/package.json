@@ -1,0 +1,34 @@
+{
+  "name": "@worktrack/config",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "main": "index.js",
+  "files": [
+    "eslint",
+    "tsconfig",
+    "prettier"
+  ],
+  "exports": {
+    "./prettier": "./prettier/index.json",
+    "./eslint/base": "./eslint/base.cjs",
+    "./eslint/node": "./eslint/node.cjs",
+    "./eslint/react": "./eslint/react.cjs",
+    "./eslint/nextjs": "./eslint/nextjs.cjs",
+    "./tsconfig/base": "./tsconfig/base.json",
+    "./tsconfig/node": "./tsconfig/node.json",
+    "./tsconfig/react-library": "./tsconfig/react-library.json",
+    "./tsconfig/nextjs": "./tsconfig/nextjs.json"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.6.0",
+    "@typescript-eslint/parser": "^8.6.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.13",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.30.0",
+    "eslint-plugin-react": "^7.36.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "typescript": "^5.5.4"
+  }
+}
