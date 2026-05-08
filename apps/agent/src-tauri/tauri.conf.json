@@ -1,0 +1,80 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "WorkTrack Agent",
+  "version": "0.1.0",
+  "identifier": "com.worktrack.agent",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [
+      {
+        "label": "main",
+        "title": "WorkTrack",
+        "width": 420,
+        "height": 560,
+        "resizable": false,
+        "fullscreen": false,
+        "decorations": true,
+        "transparent": false,
+        "visible": false,
+        "minimizable": true,
+        "skipTaskbar": true,
+        "alwaysOnTop": false,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    },
+    "trayIcon": {
+      "iconPath": "icons/tray.png",
+      "iconAsTemplate": true,
+      "tooltip": "WorkTrack — monitoring active"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["msi", "nsis", "dmg", "deb", "appimage"],
+    "category": "Productivity",
+    "shortDescription": "WorkTrack desktop agent",
+    "longDescription": "Self-hosted productivity tracking agent for office workstations.",
+    "publisher": "WorkTrack",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "wix": {
+        "language": ["en-US"],
+        "template": null
+      },
+      "nsis": {
+        "installMode": "perMachine",
+        "displayLanguageSelector": false
+      }
+    },
+    "macOS": {
+      "frameworks": [],
+      "minimumSystemVersion": "10.15"
+    },
+    "linux": {
+      "deb": {
+        "depends": ["libwebkit2gtk-4.1-0", "libayatana-appindicator3-1"]
+      }
+    }
+  },
+  "plugins": {
+    "single-instance": {},
+    "autostart": {
+      "args": ["--silent"]
+    }
+  }
+}
