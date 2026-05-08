@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import sensible from '@fastify/sensible';
+import websocket from '@fastify/websocket';
 import Fastify from 'fastify';
 
 import auditPlugin from './plugins/audit.js';
@@ -13,11 +14,15 @@ import jwtPlugin from './plugins/jwt.js';
 import prismaPlugin from './plugins/prisma.js';
 import rateLimitPlugin from './plugins/rate-limit.js';
 import redisPlugin from './plugins/redis.js';
+import { registerActivityRoutes } from './routes/activity/index.js';
 import { registerAdminRoutes } from './routes/admin/index.js';
 import { registerAuthRoutes } from './routes/auth/index.js';
 import { registerHealth } from './routes/health.js';
 import { registerIngestRoutes } from './routes/ingest/index.js';
+import { registerRulesRoutes } from './routes/rules/index.js';
+import { registerSettingsRoutes } from './routes/settings/index.js';
 import { registerUserRoutes } from './routes/users/index.js';
+import { registerWsRoutes } from './routes/ws.js';
 
 import type { FastifyInstance, FastifyServerOptions } from 'fastify';
 
@@ -55,6 +60,7 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
   await app.register(rateLimitPlugin);
   await app.register(jwtPlugin);
   await app.register(authPlugin);
+  await app.register(websocket);
   await app.register(errorHandler);
   if (!opts.disableAudit) await app.register(auditPlugin);
 
@@ -80,6 +86,30 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
   await app.register(
     async (instance) => {
       await registerIngestRoutes(instance);
+    },
+    { prefix: '/api/v1' },
+  );
+  await app.register(
+    async (instance) => {
+      await registerActivityRoutes(instance);
+    },
+    { prefix: '/api/v1/activity' },
+  );
+  await app.register(
+    async (instance) => {
+      await registerRulesRoutes(instance);
+    },
+    { prefix: '/api/v1/rules' },
+  );
+  await app.register(
+    async (instance) => {
+      await registerSettingsRoutes(instance);
+    },
+    { prefix: '/api/v1/organizations' },
+  );
+  await app.register(
+    async (instance) => {
+      await registerWsRoutes(instance);
     },
     { prefix: '/api/v1' },
   );
