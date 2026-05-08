@@ -1,0 +1,27 @@
+{
+  "name": "@worktrack/extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsx scripts/build.ts",
+    "build:chrome": "tsx scripts/build.ts chrome",
+    "build:firefox": "tsx scripts/build.ts firefox",
+    "lint": "eslint src --max-warnings 0",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "rm -rf dist-chrome dist-firefox .turbo *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@worktrack/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.273",
+    "@types/firefox-webext-browser": "^120.0.4",
+    "@types/node": "^20.16.10",
+    "@worktrack/config": "workspace:*",
+    "esbuild": "^0.24.0",
+    "eslint": "^8.57.0",
+    "tsx": "^4.19.1",
+    "typescript": "^5.5.4"
+  }
+}

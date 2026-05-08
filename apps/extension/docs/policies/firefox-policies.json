@@ -1,0 +1,10 @@
+{
+  "policies": {
+    "ExtensionSettings": {
+      "worktrack@worktrack.local": {
+        "installation_mode": "force_installed",
+        "install_url": "https://distribution.worktrack.local/firefox/worktrack.xpi"
+      }
+    }
+  }
+}

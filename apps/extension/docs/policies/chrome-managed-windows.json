@@ -1,0 +1,13 @@
+{
+  "//": "Chrome managed-policy template (Windows registry HKLM\\Software\\Policies\\Google\\Chrome\\ExtensionInstallForcelist).",
+  "//1": "Replace EXTENSION_ID with the extension id from the Chrome Web Store or your enterprise listing.",
+  "//2": "URL points at update_url for Chrome Web Store; for self-hosted CRX serve update.xml.",
+  "ExtensionInstallForcelist": ["EXTENSION_ID;https://clients2.google.com/service/update2/crx"],
+  "ExtensionSettings": {
+    "EXTENSION_ID": {
+      "installation_mode": "force_installed",
+      "update_url": "https://clients2.google.com/service/update2/crx",
+      "runtime_blocked_hosts": []
+    }
+  }
+}

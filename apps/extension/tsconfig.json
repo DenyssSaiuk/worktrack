@@ -1,0 +1,12 @@
+{
+  "extends": "@worktrack/config/tsconfig/base",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "types": ["chrome", "node"]
+  },
+  "include": ["src/**/*", "scripts/**/*"],
+  "exclude": ["dist-chrome", "dist-firefox", "node_modules"]
+}
