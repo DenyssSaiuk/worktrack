@@ -51,7 +51,6 @@ In `.env`:
 | `BACKEND_URL_PUBLIC` | e.g. `https://api.worktrack.example.com` |
 | `DASHBOARD_ORIGIN` | same as the dashboard URL incl. scheme |
 | `ACME_EMAIL` | who Let's Encrypt should contact |
-| `ANTHROPIC_API_KEY` | only if you'll enable AI screenshot analysis |
 
 ## 4. First boot
 

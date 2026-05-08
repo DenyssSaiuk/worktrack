@@ -6,8 +6,6 @@ interface Item {
   id: string;
   takenAt: string;
   trigger: string;
-  aiSummary: string | null;
-  aiCategory: string | null;
   downloadUrl: string | null;
   user: { id: string; fullName: string };
 }
@@ -54,11 +52,7 @@ export function ReviewQueue({ initial }: { initial: Item[] }) {
           ) : (
             <div className="text-sm text-slate-500">Image temporarily unavailable.</div>
           )}
-          <div className="text-xs text-slate-500">
-            <div>Trigger: {item.trigger}</div>
-            {item.aiCategory && <div>AI: {item.aiCategory}</div>}
-            {item.aiSummary && <p className="mt-1 italic">{item.aiSummary}</p>}
-          </div>
+          <div className="text-xs text-slate-500">Trigger: {item.trigger}</div>
           <div className="flex gap-2">
             <button
               onClick={() => void decide(item.id, 'dismiss')}

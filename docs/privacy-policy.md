@@ -18,18 +18,13 @@ work hours are active, the agent records the following metadata:
 - Your private-session boundaries (start and stop only, never any data
   captured during a private session)
 
-If your organization has opted in to **trigger-based screenshots**, a
-screenshot may be captured when:
-
-- An unknown foreground process has been active for more than the configured
-  threshold (default 5 minutes), or
-- The active browser domain has not been classified for more than the
-  configured threshold (default 10 minutes), or
-- Your manager has explicitly requested a single screenshot
-
-Screenshots are never collected on a fixed schedule. They are encrypted at
-rest with a key derived per-organization and only managers / admins of your
-organization can review them.
+If your organization has opted in to **manager-requested screenshots**, a
+single screenshot may be captured when your manager explicitly requests one.
+Screenshots are never collected on a fixed schedule and never automatically
+in response to activity. They are encrypted at rest with a key derived
+per-organization and only managers / admins of your organization can review
+them. WorkTrack does not analyse screenshots with any AI or third-party
+service.
 
 ## What is **not** collected
 
@@ -68,10 +63,8 @@ You may at any time:
 - **`[Organization]` admins**: configuration of rules, retention, and
   enrolment; full audit trail of administrative actions
 - **`[Organization]` security team**: access to audit logs only
-- **No third party** receives your data unless explicitly named here. If
-  trigger-based screenshots are sent to an AI service for analysis, that
-  service is `[Anthropic Claude / local LLM / …]` operating under
-  `[a Data Processing Agreement covering …]`.
+- **No third party** receives your data. WorkTrack runs on
+  `[Organization]`-controlled infrastructure with no outbound integrations.
 
 ## Contact
 

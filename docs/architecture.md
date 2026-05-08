@@ -44,11 +44,12 @@
    neutral / distracting minutes plus top apps & sites).
 6. **Excel export worker** materialises a 5-sheet workbook into MinIO and
    returns a signed URL via WebSocket.
-7. **Screenshot pipeline** (opt-in per org): agent captures → multipart
-   upload → backend encrypts with HKDF-derived org key → MinIO. The
-   `analyze-screenshot` worker decrypts in-memory, asks Claude for a
-   structured verdict, stores `aiSummary`/`aiCategory`. Manager dashboard
-   `/review` shows the queue.
+7. **Screenshot pipeline** (opt-in per org, manager-requested only): agent
+   captures → multipart upload → backend encrypts with HKDF-derived org key
+   → MinIO. Manager dashboard `/review` shows the queue. Activity
+   classification relies on the rich text we already collect (process name
+   + window title + browser domain + page title), so screenshots are a
+   forensics tool rather than a default data stream.
 
 ## Privacy gates
 
@@ -79,8 +80,11 @@
   `middleware.ts` handles redirect-on-no-cookie cleanly.
 - **MinIO** for self-hosted S3 compatibility: same SDK as AWS, swap with
   managed S3 when scaling out.
-- **`@anthropic-ai/sdk`** for screenshot analysis: highest-quality vision
-  model that returns structured JSON reliably; opt-in per organisation.
+- **No AI / LLM dependency**: window/tab titles plus the process name and
+  domain are sufficient to classify activity via productivity rules. AI
+  screenshot analysis was specced as a fallback but skipped — it adds
+  privacy risk and operating cost without unlocking real classification
+  the rules engine can't already cover.
 
 ## Component map
 

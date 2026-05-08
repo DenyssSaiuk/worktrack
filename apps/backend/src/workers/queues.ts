@@ -4,7 +4,6 @@ import { Redis } from 'ioredis';
 export const QUEUE_NAMES = {
   AGGREGATE_DAILY: 'aggregate-daily',
   EXCEL_EXPORT: 'excel-export',
-  ANALYZE_SCREENSHOT: 'analyze-screenshot',
   RETENTION_CLEANUP: 'retention-cleanup',
 } as const;
 

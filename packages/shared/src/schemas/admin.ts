@@ -51,12 +51,8 @@ export const orgSettingsSchema = z.object({
     .default(LIMITS.DEFAULT_RETENTION_DAYS),
   screenshotsEnabled: z.boolean().default(false),
   screenshotTriggers: z.object({
-    unknownProcessMinutes: z.number().int().min(1).max(60).default(5),
-    nonWhitelistedDomainMinutes: z.number().int().min(1).max(60).default(10),
     allowManagerRequested: z.boolean().default(true),
   }),
-  aiAnalysisEnabled: z.boolean().default(false),
-  aiProvider: z.enum(['anthropic', 'local', 'none']).default('none'),
   defaultWorkSchedule: workScheduleSchema,
 });
 export type OrgSettings = z.infer<typeof orgSettingsSchema>;

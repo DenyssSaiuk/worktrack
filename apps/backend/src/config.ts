@@ -20,8 +20,6 @@ const ConfigSchema = z.object({
   S3_SECRET_KEY: z.string().default('worktrack-dev-secret'),
   S3_BUCKET: z.string().default('worktrack'),
   S3_FORCE_PATH_STYLE: z.coerce.boolean().default(true),
-  ANTHROPIC_API_KEY: z.string().optional(),
-  AI_MODEL: z.string().default('claude-sonnet-4-6'),
 });
 
 export type AppConfig = z.infer<typeof ConfigSchema> & {

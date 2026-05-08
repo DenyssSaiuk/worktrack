@@ -98,8 +98,6 @@ services:
       S3_SECRET_KEY: ${S3_SECRET_KEY}
       S3_BUCKET: ${S3_BUCKET:-worktrack}
       S3_FORCE_PATH_STYLE: 'true'
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      AI_MODEL: ${AI_MODEL:-claude-sonnet-4-6}
       VIRTUAL_HOST: ${BACKEND_HOST_PUBLIC:?set BACKEND_HOST_PUBLIC=api.worktrack.example.com}
       VIRTUAL_PORT: '4000'
       LETSENCRYPT_HOST: ${BACKEND_HOST_PUBLIC}
@@ -128,8 +126,6 @@ services:
       S3_SECRET_KEY: ${S3_SECRET_KEY}
       S3_BUCKET: ${S3_BUCKET:-worktrack}
       S3_FORCE_PATH_STYLE: 'true'
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      AI_MODEL: ${AI_MODEL:-claude-sonnet-4-6}
     secrets:
       - jwt-private.pem
       - jwt-public.pem

@@ -16,8 +16,6 @@ export default async function ReviewPage() {
         id: string;
         takenAt: string;
         trigger: string;
-        aiSummary: string | null;
-        aiCategory: string | null;
         downloadUrl: string | null;
         user: { id: string; fullName: string };
       }>)
@@ -28,7 +26,7 @@ export default async function ReviewPage() {
       <header>
         <h1 className="text-xl font-semibold">Screenshot review</h1>
         <p className="text-sm text-slate-500">
-          Trigger-based captures. Review and dismiss to clear them from the queue.
+          Manager-requested captures. Review and dismiss to clear them from the queue.
         </p>
       </header>
       <ReviewQueue initial={items} />

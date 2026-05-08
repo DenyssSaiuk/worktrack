@@ -6,7 +6,6 @@ import { z } from 'zod';
 import { deriveOrgKey, encrypt } from '../../lib/crypto.js';
 import { Errors } from '../../lib/errors.js';
 import { presignDownload, uploadObject } from '../../lib/storage.js';
-import { buildConnection, createQueue, QUEUE_NAMES } from '../../workers/queues.js';
 
 import type { FastifyInstance } from 'fastify';
 
@@ -17,15 +16,10 @@ const reviewBody = z.object({
 });
 
 export async function registerScreenshotRoutes(app: FastifyInstance): Promise<void> {
-  const connection = buildConnection(app.config.REDIS_URL);
-  const aiQueue = createQueue(QUEUE_NAMES.ANALYZE_SCREENSHOT, connection);
-  app.addHook('onClose', async () => {
-    await aiQueue.close();
-  });
-
-  // Agent-only: multipart upload of the captured screenshot. The agent
-  // captures the bytes locally; the server encrypts with the org-derived
-  // key, stores in S3, and (if enabled) queues AI analysis.
+  // Agent-only: multipart upload of a manager-requested screenshot. The
+  // agent captures the bytes locally; the server encrypts with the
+  // org-derived key and stores in S3. Captures are reviewed by a manager
+  // from the dashboard /review page.
   app.post(
     '/screenshot',
     {
@@ -87,19 +81,6 @@ export async function registerScreenshotRoutes(app: FastifyInstance): Promise<vo
         },
       });
 
-      // If AI analysis is enabled per-org, queue a job; otherwise the
-      // screenshot waits in the manager review queue.
-      const org = await app.prisma.organization.findUnique({
-        where: { id: req.actor.organizationId },
-      });
-      if (org && (org.settings as { aiAnalysisEnabled?: boolean }).aiAnalysisEnabled) {
-        await aiQueue.add(
-          'analyze',
-          { screenshotId: shot.id, organizationId: req.actor.organizationId, storageKey },
-          { attempts: 2, removeOnComplete: 200, removeOnFail: 500 },
-        );
-      }
-
       reply.header('x-audit-skip', '1');
       return { id: shot.id };
     },
@@ -123,8 +104,6 @@ export async function registerScreenshotRoutes(app: FastifyInstance): Promise<vo
         id: s.id,
         takenAt: s.takenAt,
         trigger: s.trigger,
-        aiSummary: s.aiSummary,
-        aiCategory: s.aiCategory,
         reviewed: s.reviewed,
         user: s.session.user,
         downloadUrl: await presignDownload(app.config, s.storageKey, 5 * 60).catch(() => null),

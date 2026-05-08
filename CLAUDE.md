@@ -34,7 +34,8 @@ review queue, and Excel exports for managers and admins.
 - Validation: Zod (shared via `packages/shared`)
 - Build: Turbo + pnpm workspaces
 - Tests: Vitest (unit + integration), `cargo check` (Rust)
-- AI (optional): `@anthropic-ai/sdk` calling `claude-sonnet-4-6`
+- No AI or LLM dependency: classification is rule-based on the rich text
+  data we already collect (process / window title / domain / page title)
 
 ## Critical commands
 
@@ -76,8 +77,8 @@ stays server-side.
    events while `workdayActive=false`.)
 2. The agent never collects data while a private session is active —
    only the start/stop boundaries.
-3. Screenshots are only created when a configured trigger fires, never
-   on a timer.
+3. Screenshots are only created when a manager explicitly requests one,
+   never on a timer or in response to activity.
 4. PII columns and screenshots are encrypted at rest with per-org
    AES-256-GCM keys derived via HKDF from the master KEK.
 5. Data retention: TimescaleDB `add_retention_policy` deletes raw events
@@ -97,14 +98,14 @@ See `docs/security.md` for the full controls list and follow-ups.
 | 5 — Browser extension | done | MV3 (Chromium + Firefox), tab focus → native-messaging → agent; offline queue; build script for both targets; Group Policy templates |
 | 6 — Admin dashboard | done | Next.js 14 App Router + Tailwind; httpOnly cookie auth + middleware; Live (WebSocket), Team, User detail (Recharts), Reports, Rules, Users, Settings; backend routes for activity / rules / settings / WS |
 | 7 — Excel exports | done | exceljs worker (5 sheets + screenshot index), MinIO storage, signed URLs, WebSocket progress |
-| 8 — Screenshots + AI | done | encrypted multipart upload, BullMQ Anthropic-backed worker, manager review queue UI; opt-in per org |
+| 8 — Screenshots | done | encrypted multipart upload (AES-256-GCM, per-org HKDF), manager review queue UI; opt-in per org. AI analysis specced but **not** built — text data we already collect (window/tab titles, process names, domains) is sufficient for productivity-rule classification |
 | 9 — Hardening | done | production docker-compose with nginx-proxy + acme-companion + secrets; per-app Dockerfiles; backup/restore scripts; deployment, privacy, security, architecture, API docs |
 
 ## Known gaps / follow-ups
 
-- Trigger engine in the Rust agent (which condition fires a screenshot
-  capture) is deferred — the upload + AI + review pipeline lands first
-  so a real trigger can be added without server-side changes.
+- Manager-requested screenshot capture in the Rust agent (server-side
+  upload + review pipeline already in place; agent needs a `capture_now`
+  command wired to the screenshot crate).
 - `GET /api/v1/me/data-export` (GDPR Art. 15) and `DELETE /api/v1/me`
   (Art. 17) need route handlers — schema already captures everything.
 - Master KEK rotation script (`scripts/rotate-kek.ts`).

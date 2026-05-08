@@ -14,9 +14,6 @@ export function SettingsForm({ initial, canEdit }: { initial: Initial; canEdit: 
   const [screenshotsEnabled, setScreenshotsEnabled] = useState(
     (initial.settings.screenshotsEnabled as boolean) ?? false,
   );
-  const [aiEnabled, setAiEnabled] = useState(
-    (initial.settings.aiAnalysisEnabled as boolean) ?? false,
-  );
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -26,11 +23,7 @@ export function SettingsForm({ initial, canEdit }: { initial: Initial; canEdit: 
       const res = await fetch('/api/proxy/organizations/me', {
         method: 'PATCH',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          retentionDays,
-          screenshotsEnabled,
-          aiAnalysisEnabled: aiEnabled,
-        }),
+        body: JSON.stringify({ retentionDays, screenshotsEnabled }),
       });
       if (res.ok) setSaved(true);
     } finally {
@@ -63,16 +56,7 @@ export function SettingsForm({ initial, canEdit }: { initial: Initial; canEdit: 
           onChange={(e) => setScreenshotsEnabled(e.target.checked)}
           disabled={!canEdit}
         />
-        Enable trigger-based screenshots (opt-in, never interval-based)
-      </label>
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={aiEnabled}
-          onChange={(e) => setAiEnabled(e.target.checked)}
-          disabled={!canEdit}
-        />
-        Enable AI analysis of screenshots
+        Enable manager-requested screenshots (opt-in, never timer-based)
       </label>
       {canEdit && (
         <button type="button" className="btn-primary" disabled={busy} onClick={() => void save()}>
