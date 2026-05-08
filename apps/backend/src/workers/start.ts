@@ -7,6 +7,7 @@ import { pino } from 'pino';
 
 import { loadConfig } from '../config.js';
 import { startAggregateDailyWorker } from './aggregate-daily.js';
+import { startExcelExportWorker } from './excel-export.js';
 import { buildConnection } from './queues.js';
 import { startSchedulers } from './scheduler.js';
 
@@ -18,6 +19,9 @@ async function main(): Promise<void> {
   const aggregateWorker = startAggregateDailyWorker(connection, log);
   aggregateWorker.on('failed', (job, err) => log.error({ jobId: job?.id, err }, 'Job failed'));
 
+  const excelWorker = startExcelExportWorker(connection, log);
+  excelWorker.on('failed', (job, err) => log.error({ jobId: job?.id, err }, 'Excel export failed'));
+
   const schedulers = await startSchedulers(cfg.REDIS_URL, log);
 
   log.info('Workers running');
@@ -25,6 +29,7 @@ async function main(): Promise<void> {
   const shutdown = async (signal: string): Promise<void> => {
     log.info({ signal }, 'Shutting down workers');
     await aggregateWorker.close();
+    await excelWorker.close();
     await schedulers.close();
     process.exit(0);
   };

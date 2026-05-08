@@ -17,6 +17,7 @@ import redisPlugin from './plugins/redis.js';
 import { registerActivityRoutes } from './routes/activity/index.js';
 import { registerAdminRoutes } from './routes/admin/index.js';
 import { registerAuthRoutes } from './routes/auth/index.js';
+import { registerExportRoutes } from './routes/exports/index.js';
 import { registerHealth } from './routes/health.js';
 import { registerIngestRoutes } from './routes/ingest/index.js';
 import { registerRulesRoutes } from './routes/rules/index.js';
@@ -106,6 +107,12 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
       await registerSettingsRoutes(instance);
     },
     { prefix: '/api/v1/organizations' },
+  );
+  await app.register(
+    async (instance) => {
+      await registerExportRoutes(instance);
+    },
+    { prefix: '/api/v1/exports' },
   );
   await app.register(
     async (instance) => {
