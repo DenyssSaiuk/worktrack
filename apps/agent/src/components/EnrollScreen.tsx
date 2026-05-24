@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { agent } from '../lib/tauri.js';
 
 export function EnrollScreen({ onDone }: { onDone: () => void }): JSX.Element {
-  const [serverUrl, setServerUrl] = useState('http://localhost:4000');
+  const [serverUrl, setServerUrl] = useState('http://localhost:7340');
   const [enrollToken, setEnrollToken] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);

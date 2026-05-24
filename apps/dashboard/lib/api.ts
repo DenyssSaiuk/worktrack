@@ -32,7 +32,7 @@ interface RequestOptions {
   token?: string;
 }
 
-const SERVER_BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:4000';
+const SERVER_BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:7340';
 
 async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
   const url = path.startsWith('http') ? path : `${SERVER_BACKEND_URL}${path}`;

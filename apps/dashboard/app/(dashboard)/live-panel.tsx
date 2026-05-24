@@ -22,7 +22,7 @@ export function LivePanel({ users }: { users: User[] }) {
   const [wsState, setWsState] = useState<'connecting' | 'open' | 'closed'>('connecting');
 
   useEffect(() => {
-    const wsUrl = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000').replace(
+    const wsUrl = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:7340').replace(
       /^http/,
       'ws',
     );

@@ -9,14 +9,14 @@
 //        node test/load/generate-tokens.js > tokens.json
 //      The script issues an enroll-token + enrolls a synthetic device per
 //      employee, writing { agentToken, sessionId } pairs to disk.
-//   5. Run k6: `k6 run --env TOKENS=tokens.json --env BASE=http://localhost:4000 test/load/ingest.k6.js`
+//   5. Run k6: `k6 run --env TOKENS=tokens.json --env BASE=http://localhost:7340 test/load/ingest.k6.js`
 //
 // Pass criteria: error rate < 1%, p(95) < 250ms.
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 
 const TOKENS = JSON.parse(open(__ENV.TOKENS || './tokens.json'));
-const BASE = __ENV.BASE || 'http://localhost:4000';
+const BASE = __ENV.BASE || 'http://localhost:7340';
 
 export const options = {
   scenarios: {

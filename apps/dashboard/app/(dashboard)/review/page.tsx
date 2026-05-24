@@ -1,7 +1,7 @@
 import { ReviewQueue } from './review-queue';
 import { requireUser } from '../../../lib/session';
 
-const BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:4000';
+const BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:7340';
 
 export default async function ReviewPage() {
   const user = await requireUser();

@@ -21,6 +21,7 @@ import { registerExportRoutes } from './routes/exports/index.js';
 import { registerHealth } from './routes/health.js';
 import { registerIngestRoutes } from './routes/ingest/index.js';
 import { registerRulesRoutes } from './routes/rules/index.js';
+import { registerScreenshotRoutes } from './routes/screenshots/index.js';
 import { registerSettingsRoutes } from './routes/settings/index.js';
 import { registerUserRoutes } from './routes/users/index.js';
 import { registerWsRoutes } from './routes/ws.js';
@@ -113,6 +114,12 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
       await registerExportRoutes(instance);
     },
     { prefix: '/api/v1/exports' },
+  );
+  await app.register(
+    async (instance) => {
+      await registerScreenshotRoutes(instance);
+    },
+    { prefix: '/api/v1/screenshots' },
   );
   await app.register(
     async (instance) => {

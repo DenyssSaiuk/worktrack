@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 import { getAccessToken } from '../../../../lib/session';
 
-const BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:4000';
+const BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:7340';
 
 async function handler(
   req: Request,

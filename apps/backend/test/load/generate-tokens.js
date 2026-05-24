@@ -7,11 +7,11 @@
  *   node test/load/generate-tokens.js > tokens.json
  *   k6 run --env TOKENS=tokens.json test/load/ingest.k6.js
  *
- * Requires the backend running on http://localhost:4000 and an admin login.
+ * Requires the backend running on http://localhost:7340 and an admin login.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 
-const BASE = process.env.BASE || 'http://localhost:4000';
+const BASE = process.env.BASE || 'http://localhost:7340';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@acme.test';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'WorkTrack!Dev2026';
 

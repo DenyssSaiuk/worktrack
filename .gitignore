@@ -69,3 +69,6 @@ docker/minio/data/
 .eslintcache
 .parcel-cache/
 secrets/
+
+# Claude Code worktrees & local plugin state
+.claude/

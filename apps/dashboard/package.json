@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3000",
+    "dev": "next dev -p 7330",
     "build": "next build",
-    "start": "next start -p 3000",
+    "start": "next start -p 7330",
     "lint": "next lint --max-warnings 0 --dir app --dir components --dir lib --dir hooks",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .next .turbo *.tsbuildinfo"

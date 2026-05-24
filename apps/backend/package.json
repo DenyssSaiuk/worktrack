@@ -6,8 +6,8 @@
   "main": "./dist/server.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "dev": "tsx watch src/server.ts",
-    "dev:workers": "tsx watch src/workers/start.ts",
+    "dev": "tsx watch --env-file=.env src/server.ts",
+    "dev:workers": "tsx watch --env-file=.env src/workers/start.ts",
     "start": "node dist/server.js",
     "start:workers": "node dist/workers/start.js",
     "lint": "eslint src test --max-warnings 0",
