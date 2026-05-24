@@ -8,10 +8,10 @@ Self-hosted employee time tracking and productivity analytics for office environ
 
 | Component | Stack | Purpose |
 | --- | --- | --- |
-| `apps/agent` | Tauri 2, Rust, React + TS | Desktop agent — login, monitoring, tray, offline buffer |
-| `apps/extension` | MV3, TypeScript, Vite | Browser extension — tab/URL tracking, talks to the agent via Native Messaging |
-| `apps/backend` | Node 20, Fastify, Prisma | Ingest API, auth, BullMQ workers, WebSockets |
-| `apps/dashboard` | Next.js 14, Tailwind, shadcn/ui | Admin & manager UI |
+| `apps/dashboard` | Next.js 14, Tailwind, shadcn/ui | Web UI for admins, managers **and workers** (`/workday` page = Start/Stop Workday). Workers register and sign in entirely on the web — no desktop install required. |
+| `apps/extension` | MV3, TypeScript | Browser extension — signs in with the worker's email/password, pushes `tab_focus` events straight to the backend over HTTPS while a workday is active. |
+| `apps/backend` | Node 20, Fastify, Prisma | Ingest API, auth, BullMQ workers, WebSockets. Web flow uses `POST /api/v1/me/{workday,heartbeat,events}` with the same user JWT the dashboard uses. |
+| `apps/agent` | Tauri 2, Rust, React + TS | _Optional_ desktop agent. Kept in the repo for legacy / OS-level monitoring (process names, idle, screenshots), but is not part of the default deployment any more. |
 | `packages/shared` | TypeScript, Zod | Shared types/schemas |
 | `packages/database` | Prisma | Schema, migrations, seeds |
 | `packages/config` | ESLint, tsconfig, prettier | Shared lint/format configs |
@@ -54,8 +54,9 @@ Install once, system-wide:
 - **Node.js 20 LTS** (`node --version` should print `v20.x`)
 - **pnpm 9 or newer** — `npm install -g pnpm`
 - **Docker Desktop** with Docker Compose
-- **Rust stable** (only required if you intend to run the desktop agent —
-  install via [rustup.rs](https://rustup.rs/))
+- **Rust stable** — only required if you also build the optional Tauri
+  desktop agent at `apps/agent/`. The default web-only flow doesn't need
+  it. Install via [rustup.rs](https://rustup.rs/) if you do.
 - **OpenSSL** (already present on macOS / Linux; on Windows install via
   [Git for Windows](https://git-scm.com/download/win) which bundles it)
 
@@ -136,49 +137,43 @@ pnpm dev:dashboard
 # → dashboard ready on http://localhost:7330
 ```
 
-Open <http://localhost:7330> and sign in with the admin credentials above.
-You should land on the Live page with a sidebar of Team, Reports, Rules,
-Users, Review, Settings.
+Open <http://localhost:7330> and sign in:
 
-> **Tip.** `pnpm dev` runs everything (backend + dashboard + agent + ext)
-> through Turbo in a single terminal. The two-terminal split above is just
-> more pleasant when you only need the web stack.
+- as **admin** (`admin@acme.test`) → land on **Live** with sidebar
+  Workday, Live, Team, Review, Reports, Rules, Users, Settings.
+- as **manager** (`alice.manager@acme.test`) → land on **Live** with
+  sidebar Workday, Live, Team, Review, Reports.
+- as **employee** (`employee1@acme.test`) → land on **My Workday** with
+  only Workday + Sign out in the sidebar.
+
+> **Tip.** `pnpm dev` runs everything through Turbo in a single
+> terminal. The two-terminal split above is just more pleasant when you
+> only need the web stack.
 
 ---
 
-## For a worker — installing the time-logging tools
+## For a worker — the web-only onboarding
 
-There are **two pieces** a regular employee installs on their workstation:
+Workers do **not** install a desktop app. Everything happens in the browser:
 
-1. The **WorkTrack desktop agent** (Tauri app). It is the only thing that
-   talks to the server — it owns auth, the offline buffer, and the tray
-   "Start / Stop workday" controls.
-2. The **WorkTrack browser extension** (Chrome / Edge or Firefox), which
-   forwards tab-focus events to the agent over native messaging. The
-   extension is optional but recommended — without it the server only sees
-   process / window-title events from the desktop agent and not the active
-   browser URL.
+1. Open the dashboard at <http://localhost:7330> and sign in with the
+   credentials the admin gave you (e.g. `employee1@acme.test`).
+2. You land on **My Workday**. Click **Start Workday** — the dashboard
+   creates a session via `POST /api/v1/me/workday/start` and a live timer
+   starts. The page also begins sending a heartbeat every 30 s so your
+   manager sees you as online.
+3. (Recommended) Install the **WorkTrack browser extension** so tab
+   focus events also feed into the session — see § 7 below. Without the
+   extension only the dashboard tab can heartbeat, so the activity
+   timeline will only show the moments your workday started and stopped.
+4. Click **Stop Workday** at the end of the day. The session is closed
+   server-side, the extension stops sending, nothing is collected until
+   the next Start.
 
-### 7a. Build and install the desktop agent
+There is no enrollment token, no Tauri install, no native messaging
+bridge — the worker's web cookie / JWT is the credential.
 
-```bash
-# from the repo root
-pnpm --filter @worktrack/agent build      # produces a release bundle
-# during development you can also use:
-pnpm dev:agent                            # opens the Tauri window in dev mode
-```
-
-The agent's first window is the **enrollment screen**. Fill in:
-
-- **Server URL** → `http://localhost:7340` (already pre-filled)
-- **Enrollment token** → generated by an admin (see "Issuing an enrollment
-  token" below)
-
-After enrollment the agent docks into the system tray. The employee clicks
-**Start Workday** to begin collecting. Outside scheduled hours, or in a
-private session, the agent collects nothing.
-
-### 7b. Build and install the browser extension
+### 7. Install the browser extension (optional but recommended)
 
 ```bash
 pnpm --filter @worktrack/extension build
@@ -200,31 +195,39 @@ pnpm --filter @worktrack/extension build
 2. Click **Load Temporary Add-on…**
 3. Select `apps/extension/dist-firefox/manifest.json`.
 
+The popup asks for **email**, **password**, and the **server URL**
+(default `http://localhost:7340`). Sign in once and the extension owns
+its own JWT — it doesn't depend on the dashboard cookies. The popup then
+exposes the same Start / Stop Workday button as the dashboard, so a
+worker can manage their workday from either side.
+
 For production rollout via Group Policy / Intune, see
 `apps/extension/README.md` and `docs/policies/`.
 
-### 7c. Issuing an enrollment token (admin task)
+### Optional: the legacy desktop agent
 
-1. Sign in to the dashboard at <http://localhost:7330> as `admin@acme.test`.
-2. Navigate to **Users**, find the employee, click **Issue enroll token**.
-3. Copy the one-time token and hand it (over a secure channel) to the
-   employee — they paste it into the agent's enrollment screen.
+The Tauri agent at `apps/agent/` is still in the repo for deployments
+that need OS-level signals (process names, idle detection, manager-
+triggered screenshots). Bring it up with:
 
-Tokens are single-use and expire after a short window.
+```bash
+pnpm --filter @worktrack/agent build
+pnpm dev:agent
+```
+
+It uses the old enrollment-token flow (admin issues a token, worker
+pastes it into the agent). It is **not required** for the web-only
+deployment and is **not** part of the default getting-started path.
 
 ---
 
 ## Day-to-day worker flow
 
-1. **Log in once** to the desktop agent (via enrollment token, then it
-   stays signed in).
-2. Each morning the agent shows **Start Workday** in its tray menu. The
-   moment you click it, monitoring begins (and not before).
-3. When you take a private break, click **Start Private Session** — the
-   agent records only the start/stop boundary, never the contents.
-4. End of day: **Stop Workday**. The agent flushes any buffered events.
-
-The employee never needs to interact with the dashboard.
+1. Open <http://localhost:7330> in the morning and sign in.
+2. On **My Workday**, click **Start Workday**.
+3. Do your work. The dashboard timer ticks; if the extension is
+   installed it pushes tab events as you focus tabs.
+4. End of day: **Stop Workday**. The session closes and tracking halts.
 
 ---
 
@@ -246,6 +249,19 @@ docker compose down   # stop infra (data preserved in named volumes)
 ```
 
 ---
+
+## Screenshots
+
+Demo screenshots of the running app (admin, manager, and employee views,
+plus the browser-extension popup) live under
+[`docs/screenshots/`](docs/screenshots/). Highlights:
+
+- `01-login.png` — shared sign-in page
+- `02-live.png` … `09-settings.png` — admin / manager dashboard pages
+- `11-employee-workday-idle.png` / `12-employee-workday-active.png` —
+  worker's web view, before and after **Start Workday**
+- `14-extension-popup-signed-out.png` / `15-extension-popup-active.png`
+  — browser-extension popup, login form and active tracking state
 
 ## Deployment
 

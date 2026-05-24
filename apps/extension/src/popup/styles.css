@@ -5,33 +5,107 @@
 
 body {
   margin: 0;
-  width: 280px;
+  width: 300px;
   padding: 16px;
   background: #f8fafc;
   color: #0f172a;
 }
 
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
 h1 {
-  margin: 0 0 4px;
+  margin: 0;
   font-size: 16px;
   font-weight: 600;
 }
 
-#status {
-  margin: 8px 0 12px;
-  font-size: 13px;
+.tag {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #e0e7ff;
+  color: #4338ca;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #334155;
+}
+
+label span {
+  display: block;
+  margin-bottom: 3px;
   font-weight: 500;
+}
+
+input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  font-size: 13px;
+  background: white;
 }
 
 .muted {
   color: #475569;
   font-size: 12px;
   line-height: 1.4;
-  margin: 0 0 12px;
+  margin: 8px 0;
+}
+
+.muted.small {
+  font-size: 11px;
 }
 
 a {
   color: #2563eb;
+}
+
+.state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 12px 0 8px;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #cbd5e1;
+}
+
+.dot.active {
+  background: #22c55e;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 button {
@@ -42,8 +116,50 @@ button {
   background: white;
   cursor: pointer;
   font-weight: 500;
+  font-size: 13px;
+  margin-bottom: 6px;
 }
 
 button:hover {
   background: #f1f5f9;
+}
+
+button.primary {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+button.primary:hover {
+  background: #1d4ed8;
+}
+
+button.link {
+  background: none;
+  border: none;
+  color: #475569;
+  text-decoration: underline;
+  padding: 4px;
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+button.link:hover {
+  background: none;
+  color: #0f172a;
+}
+
+.error {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+#queue-line {
+  margin-top: 0;
+  font-size: 11px;
+  color: #f59e0b;
 }

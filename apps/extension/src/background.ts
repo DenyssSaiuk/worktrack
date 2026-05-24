@@ -1,11 +1,17 @@
 /**
- * MV3 service worker. Listens for tab/window focus changes, builds tab_focus
- * events, and forwards them to the local agent via native messaging. If the
- * agent isn't running, events queue in chrome.storage.local until it
- * reconnects.
+ * MV3 service worker.
+ *
+ * Web-only architecture (no desktop agent):
+ *   - The extension owns its own auth (JWT in chrome.storage.local).
+ *   - When the signed-in user has an active workday, focused tabs are
+ *     converted into `tab_focus` events and POSTed straight to
+ *     /api/v1/me/events on the backend.
+ *   - Events queue locally when the network is down, when the user is
+ *     paused, or when the workday is closed. The flush alarm drains the
+ *     queue every 30s and also sends a heartbeat.
  */
-import { ensureConnected, sendEvent } from './lib/native.js';
-import { drainQueue, enqueue, getSettings, queueLength } from './lib/storage.js';
+import { getWorkdayStatus, heartbeat, pushEvents } from './lib/api.js';
+import { drainQueue, enqueue, getAuth, getSettings, queueLength } from './lib/storage.js';
 
 import type { ExtensionEvent } from './lib/types.js';
 
@@ -17,12 +23,11 @@ function uuid(): string {
   return crypto.randomUUID();
 }
 
-function sanitizeUrl(url: string, trackUrls: boolean): { domain: string; safeUrl?: string } {
+function sanitizeUrl(url: string, domainOnly: boolean): { domain: string; safeUrl?: string } {
   try {
     const u = new URL(url);
     const domain = u.hostname.toLowerCase();
-    if (!trackUrls) return { domain };
-    // Drop the query string and fragment; keep path only.
+    if (domainOnly) return { domain };
     return { domain, safeUrl: `${u.protocol}//${u.host}${u.pathname}` };
   } catch {
     return { domain: 'unknown' };
@@ -34,8 +39,10 @@ async function recordTab(tab: chrome.tabs.Tab): Promise<void> {
 
   const settings = await getSettings();
   if (settings.paused) return;
+  const auth = await getAuth();
+  if (!auth) return; // not signed in yet
 
-  const { domain, safeUrl } = sanitizeUrl(tab.url, settings.trackUrls);
+  const { domain, safeUrl } = sanitizeUrl(tab.url, settings.domainOnly);
   if (domain === lastDomain) return;
   lastDomain = domain;
 
@@ -46,6 +53,7 @@ async function recordTab(tab: chrome.tabs.Tab): Promise<void> {
     incognito: tab.incognito ?? false,
   };
   if (safeUrl) payload.url = safeUrl;
+
   const evt: ExtensionEvent = {
     clientEventId: uuid(),
     timestamp: new Date().toISOString(),
@@ -53,7 +61,16 @@ async function recordTab(tab: chrome.tabs.Tab): Promise<void> {
     payload,
   };
 
-  if (!sendEvent(settings.hostPort, evt)) {
+  // Best-effort direct push; on any failure (offline, workday closed,
+  // unauthorized), buffer locally and let the flush loop retry.
+  try {
+    const status = await getWorkdayStatus(settings.backendUrl);
+    if (!status?.active) {
+      await enqueue([evt]);
+      return;
+    }
+    await pushEvents(settings.backendUrl, [evt]);
+  } catch {
     await enqueue([evt]);
   }
 }
@@ -89,30 +106,47 @@ chrome.runtime.onInstalled.addListener(async () => {
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name !== FLUSH_ALARM) return;
   const settings = await getSettings();
-  ensureConnected(settings.hostPort);
-  if ((await queueLength()) === 0) return;
-  const queue = await drainQueue();
-  let delivered = 0;
-  for (const evt of queue) {
-    if (sendEvent(settings.hostPort, evt)) delivered++;
-    else {
-      // Re-queue what we couldn't ship.
-      await enqueue([evt]);
-    }
+  const auth = await getAuth();
+  if (!auth) return;
+
+  // Best-effort heartbeat — keeps the worker visible as "online" in the
+  // Live dashboard.
+  try {
+    await heartbeat(settings.backendUrl);
+  } catch {
+    /* ignore */
   }
-  if (delivered > 0) {
+
+  if ((await queueLength()) === 0) return;
+  const status = await getWorkdayStatus(settings.backendUrl).catch(() => null);
+  if (!status?.active) return; // wait until the user starts a workday
+
+  const queue = await drainQueue();
+  try {
+    await pushEvents(settings.backendUrl, queue);
     // eslint-disable-next-line no-console
-    console.info(`[worktrack] flushed ${delivered} buffered events`);
+    console.info(`[worktrack] flushed ${queue.length} buffered events`);
+  } catch {
+    // Push failed — put them back at the front of the queue.
+    await enqueue(queue);
   }
 });
 
-// Popup / options page can read live status via runtime.sendMessage.
+// Popup polls for status via runtime.sendMessage.
 chrome.runtime.onMessage.addListener((msg, _sender, respond) => {
   if (msg?.kind === 'status') {
     void (async () => {
+      const settings = await getSettings();
+      const auth = await getAuth();
+      let workday = null;
+      if (auth) {
+        workday = await getWorkdayStatus(settings.backendUrl).catch(() => null);
+      }
       respond({
         queued: await queueLength(),
-        settings: await getSettings(),
+        settings,
+        auth: auth ? { email: auth.email, fullName: auth.fullName, role: auth.role } : null,
+        workday,
       });
     })();
     return true;

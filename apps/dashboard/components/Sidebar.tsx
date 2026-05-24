@@ -4,18 +4,24 @@ import { clsx } from 'clsx';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-const NAV = [
-  { href: '/', label: 'Live' },
-  { href: '/team', label: 'Team' },
-  { href: '/review', label: 'Review' },
-  { href: '/reports', label: 'Reports' },
-  { href: '/rules', label: 'Rules' },
-  { href: '/users', label: 'Users' },
-  { href: '/settings', label: 'Settings' },
+type Role = 'employee' | 'manager' | 'admin';
+type NavItem = { href: string; label: string; roles: Role[] };
+
+const NAV: NavItem[] = [
+  { href: '/workday', label: 'My Workday', roles: ['employee', 'manager', 'admin'] },
+  { href: '/', label: 'Live', roles: ['manager', 'admin'] },
+  { href: '/team', label: 'Team', roles: ['manager', 'admin'] },
+  { href: '/review', label: 'Review', roles: ['manager', 'admin'] },
+  { href: '/reports', label: 'Reports', roles: ['manager', 'admin'] },
+  { href: '/rules', label: 'Rules', roles: ['admin'] },
+  { href: '/users', label: 'Users', roles: ['admin'] },
+  { href: '/settings', label: 'Settings', roles: ['admin'] },
 ];
 
 export function Sidebar({ user }: { user: { fullName: string; email: string; role: string } }) {
   const pathname = usePathname();
+  const role = user.role as Role;
+  const visible = NAV.filter((n) => n.roles.includes(role));
   return (
     <aside className="flex w-56 flex-col border-r border-slate-200 bg-white p-4">
       <div className="mb-6">
@@ -24,7 +30,7 @@ export function Sidebar({ user }: { user: { fullName: string; email: string; rol
         <div className="text-xs text-slate-400">{user.role}</div>
       </div>
       <nav className="flex flex-1 flex-col gap-1 text-sm">
-        {NAV.map((n) => {
+        {visible.map((n) => {
           const active = pathname === n.href || (n.href !== '/' && pathname?.startsWith(n.href));
           return (
             <Link

@@ -13,14 +13,27 @@ export interface ExtensionEvent {
   payload: TabFocusEventPayload;
 }
 
+export interface ExtensionAuth {
+  accessToken: string;
+  refreshToken: string;
+  /** Epoch ms when the access token expires. */
+  accessExpiresAt: number;
+  email: string;
+  fullName: string;
+  role: string;
+}
+
 export interface ExtensionSettings {
-  trackUrls: boolean; // if false, only domain is reported
-  hostPort: string; // native host name
+  /** Backend base URL, e.g. `http://localhost:7340`. */
+  backendUrl: string;
+  /** When true, send only the domain — never the URL path. */
+  domainOnly: boolean;
+  /** Manual "do not track" toggle in the popup. */
   paused: boolean;
 }
 
 export const DEFAULT_SETTINGS: ExtensionSettings = {
-  trackUrls: false,
-  hostPort: 'com.worktrack.agent.bridge',
+  backendUrl: 'http://localhost:7340',
+  domainOnly: true,
   paused: false,
 };

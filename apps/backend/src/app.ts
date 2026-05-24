@@ -20,6 +20,7 @@ import { registerAuthRoutes } from './routes/auth/index.js';
 import { registerExportRoutes } from './routes/exports/index.js';
 import { registerHealth } from './routes/health.js';
 import { registerIngestRoutes } from './routes/ingest/index.js';
+import { registerMeRoutes } from './routes/me/index.js';
 import { registerRulesRoutes } from './routes/rules/index.js';
 import { registerScreenshotRoutes } from './routes/screenshots/index.js';
 import { registerSettingsRoutes } from './routes/settings/index.js';
@@ -90,6 +91,12 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
       await registerIngestRoutes(instance);
     },
     { prefix: '/api/v1' },
+  );
+  await app.register(
+    async (instance) => {
+      await registerMeRoutes(instance);
+    },
+    { prefix: '/api/v1/me' },
   );
   await app.register(
     async (instance) => {

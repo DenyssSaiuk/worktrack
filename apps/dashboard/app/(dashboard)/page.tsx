@@ -1,11 +1,16 @@
 /* Live dashboard — currently working employees + activity. WebSocket
  * subscription is added incrementally on the client. */
+import { redirect } from 'next/navigation';
+
 import { LivePanel } from './live-panel';
 import { api } from '../../lib/api';
 import { requireUser } from '../../lib/session';
 
 export default async function LivePage() {
   const user = await requireUser();
+  // Employees never need the cross-team Live page; send them to their
+  // personal workday view.
+  if (user.role === 'employee') redirect('/workday');
   const users = await api.listUsers(user.accessToken).catch(() => ({
     items: [] as Array<{
       id: string;

@@ -16,13 +16,14 @@ async function handler(
   const search = new URL(req.url).search;
   const target = `${BACKEND_URL}/api/v1/${path}${search}`;
 
-  const init: RequestInit = {
-    method: req.method,
-    headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-  };
+  const headers: Record<string, string> = { authorization: `Bearer ${token}` };
+  const init: RequestInit = { method: req.method, headers };
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     const text = await req.text();
-    if (text) init.body = text;
+    if (text) {
+      init.body = text;
+      headers['content-type'] = 'application/json';
+    }
   }
 
   const upstream = await fetch(target, init);

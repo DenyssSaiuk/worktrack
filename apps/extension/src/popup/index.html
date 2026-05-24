@@ -8,14 +8,51 @@
   </head>
   <body>
     <main id="root">
-      <h1>WorkTrack</h1>
-      <p id="status">Loading…</p>
-      <p class="muted">
-        WorkTrack reports your active tab&rsquo;s domain to the desktop agent only during scheduled
-        work hours. Read your organization&rsquo;s
-        <a id="policy-link" href="#" target="_blank" rel="noopener">privacy policy</a>.
-      </p>
-      <button id="pause-toggle" type="button">Pause</button>
+      <header class="header">
+        <h1>WorkTrack</h1>
+        <span id="role-tag" class="tag hidden"></span>
+      </header>
+
+      <!-- Signed-out view -->
+      <section id="signed-out" class="hidden">
+        <p class="muted">Sign in with your WorkTrack account to start time tracking.</p>
+        <form id="login-form">
+          <label>
+            <span>Email</span>
+            <input id="login-email" type="email" autocomplete="username" required />
+          </label>
+          <label>
+            <span>Password</span>
+            <input id="login-password" type="password" autocomplete="current-password" required />
+          </label>
+          <label>
+            <span>Server URL</span>
+            <input id="login-server" type="url" required />
+          </label>
+          <div id="login-error" class="error hidden"></div>
+          <button type="submit" id="login-submit" class="primary">Sign in</button>
+        </form>
+      </section>
+
+      <!-- Signed-in view -->
+      <section id="signed-in" class="hidden">
+        <p id="who" class="muted"></p>
+        <div id="workday-state" class="state">
+          <span id="dot" class="dot"></span>
+          <span id="workday-label">…</span>
+        </div>
+        <p id="queue-line" class="muted hidden"></p>
+
+        <button id="workday-toggle" type="button" class="primary">Start Workday</button>
+        <button id="pause-toggle" type="button">Pause tracking</button>
+        <button id="logout" type="button" class="link">Sign out</button>
+
+        <p class="muted small">
+          The extension reports the domains and titles of the tabs you focus only while your
+          workday is active. Read your organization&rsquo;s
+          <a id="policy-link" href="#" target="_blank" rel="noopener">privacy policy</a>.
+        </p>
+      </section>
     </main>
     <script src="popup.js" type="module"></script>
   </body>

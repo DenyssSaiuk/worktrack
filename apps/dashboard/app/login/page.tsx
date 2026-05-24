@@ -33,7 +33,11 @@ function LoginForm() {
         const body = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(body.error ?? `Login failed (${res.status})`);
       }
-      router.replace(searchParams.get('next') ?? '/');
+      const data = (await res.json()) as { user?: { role?: string } };
+      const explicitNext = searchParams.get('next');
+      // Employees land on /workday by default; managers + admins on /.
+      const defaultLanding = data.user?.role === 'employee' ? '/workday' : '/';
+      router.replace(explicitNext ?? defaultLanding);
     } catch (err) {
       setError((err as Error).message);
     } finally {
