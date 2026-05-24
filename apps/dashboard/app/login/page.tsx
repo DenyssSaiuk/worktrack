@@ -14,7 +14,7 @@ export default function LoginPage() {
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState('admin@acme.test');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +50,7 @@ function LoginForm() {
       <form onSubmit={onSubmit} className="card w-full max-w-md space-y-4">
         <header>
           <h1 className="text-xl font-semibold">WorkTrack</h1>
-          <p className="text-sm text-slate-500">Sign in to the admin console.</p>
+          <p className="text-sm text-slate-500">Sign in to your WorkTrack workspace.</p>
         </header>
         <label className="block">
           <span className="text-sm font-medium">Email</span>

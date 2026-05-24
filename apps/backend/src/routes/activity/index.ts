@@ -69,4 +69,33 @@ export async function registerActivityRoutes(app: FastifyInstance): Promise<void
       new Date(`${q.date}T00:00:00Z`),
     );
   });
+
+  /**
+   * Snapshot presence for everyone in the org. A user counts as online if
+   * any of their devices reported a heartbeat in the last 90 seconds (one
+   * missed beat of grace for the 30 s client cadence).
+   */
+  app.get('/presence', async (req) => {
+    if (!req.actor) throw Errors.unauthorized();
+    const cutoff = new Date(Date.now() - 90 * 1000);
+    const users = await app.prisma.user.findMany({
+      where: { organizationId: req.actor.organizationId },
+      select: {
+        id: true,
+        devices: {
+          select: { lastSeenAt: true },
+          orderBy: { lastSeenAt: 'desc' },
+          take: 1,
+        },
+      },
+    });
+    return users.map((u) => {
+      const lastSeen = u.devices[0]?.lastSeenAt ?? null;
+      return {
+        userId: u.id,
+        lastSeenAt: lastSeen?.toISOString() ?? null,
+        online: !!lastSeen && lastSeen >= cutoff,
+      };
+    });
+  });
 }

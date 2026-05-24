@@ -17,8 +17,31 @@ interface LiveTick {
   inPrivateSession: boolean;
 }
 
-export function LivePanel({ users }: { users: User[] }) {
-  const [live, setLive] = useState<Record<string, LiveTick>>({});
+interface PresenceRow {
+  userId: string;
+  online: boolean;
+  lastSeenAt: string | null;
+}
+
+export function LivePanel({
+  users,
+  initialPresence = [],
+}: {
+  users: User[];
+  initialPresence?: PresenceRow[];
+}) {
+  const [live, setLive] = useState<Record<string, LiveTick>>(() => {
+    const seed: Record<string, LiveTick> = {};
+    for (const row of initialPresence) {
+      seed[row.userId] = {
+        kind: 'heartbeat',
+        userId: row.userId,
+        online: row.online,
+        inPrivateSession: false,
+      };
+    }
+    return seed;
+  });
   const [wsState, setWsState] = useState<'connecting' | 'open' | 'closed'>('connecting');
 
   useEffect(() => {

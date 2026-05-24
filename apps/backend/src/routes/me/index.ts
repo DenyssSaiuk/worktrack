@@ -13,6 +13,7 @@ import { z } from 'zod';
 
 import { Errors } from '../../lib/errors.js';
 import { endSession, heartbeat, ingestEvents, startSession } from '../../services/agent.service.js';
+import { broadcast } from '../ws.js';
 
 import type { FastifyInstance } from 'fastify';
 
@@ -126,6 +127,12 @@ export async function registerMeRoutes(app: FastifyInstance): Promise<void> {
       { deviceId: device.id },
       { agentVersion: device.agentVersion, timestamp: new Date() },
     );
+    broadcast(req.actor.organizationId, {
+      kind: 'heartbeat',
+      userId: req.actor.id,
+      online: true,
+      inPrivateSession: false,
+    });
     reply.header('x-audit-skip', '1');
     return { ok: true };
   });

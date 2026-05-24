@@ -252,16 +252,33 @@ docker compose down   # stop infra (data preserved in named volumes)
 
 ## Screenshots
 
-Demo screenshots of the running app (admin, manager, and employee views,
-plus the browser-extension popup) live under
-[`docs/screenshots/`](docs/screenshots/). Highlights:
+Demo screenshots of the running app live under
+[`docs/screenshots/`](docs/screenshots/).
+
+**Admin / manager views** (`01`–`13`):
 
 - `01-login.png` — shared sign-in page
-- `02-live.png` … `09-settings.png` — admin / manager dashboard pages
-- `11-employee-workday-idle.png` / `12-employee-workday-active.png` —
-  worker's web view, before and after **Start Workday**
-- `14-extension-popup-signed-out.png` / `15-extension-popup-active.png`
-  — browser-extension popup, login form and active tracking state
+- `02-live.png` … `09-settings.png` — admin dashboard pages (Live,
+  Team, User detail, Reports, Rules, Users, Review, Settings)
+- `13-manager-workday.png` — same `/workday` page from a manager session
+
+**Employee-side flow** (`emp-1` … `emp-6`):
+
+| # | File | What it shows |
+| --- | --- | --- |
+| 1 | `emp-1-login.png` | Worker types their email + password into the same shared login form (no enrollment token) |
+| 2 | `emp-2-fresh-idle.png` | Just landed on **My Workday** — sidebar contains only Workday + Sign out; status is "Workday not started" |
+| 3 | `emp-3-just-started.png` | Two seconds after clicking **Start Workday** — green pulsing dot, live timer at `0:00:02`, session id surfaced |
+| 4 | `emp-4-running.png` | Mid-workday — timer at `0:25:36`, started 25 min ago (backdated in the DB for the demo) |
+| 5 | `emp-5-stopped.png` | After clicking **Stop Workday** — session closed, back to idle |
+| 6 | `emp-6-manager-live.png` | Manager opens **Live** at the same moment — Olena Kovalenko shows **online** in green; everyone else is offline |
+
+**Browser extension popup** (`14`–`15`):
+
+- `14-extension-popup-signed-out.png` — first launch: email, password,
+  server URL
+- `15-extension-popup-active.png` — signed in, workday active, the popup
+  exposes the same Start / Stop control as the dashboard
 
 ## Deployment
 
